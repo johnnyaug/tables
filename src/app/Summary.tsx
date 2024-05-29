@@ -1,22 +1,15 @@
 import toast from 'react-hot-toast';
 import Modal from 'react-modal';
-import { Guess } from './page';
 
 interface SummaryProps {
     isOpen: boolean,
     onClose: () => void,
     isSuccess: boolean,
-    guessHistory: Guess[],
     puzzleNumber: number
 }
 
-export default function Summary({ isOpen, isSuccess, onClose, guessHistory, puzzleNumber }: SummaryProps) {
-    const groupEmoji: { [key: number]: string } = {
-        0: '🟨',
-        1: '🟩',
-        2: '🟦',
-        3: '🟪'
-    }
+export default function Summary({ isOpen, isSuccess, onClose, puzzleNumber }: SummaryProps) {
+
     const summaryStyles = {
         content: {
             top: '20%',
@@ -34,9 +27,6 @@ export default function Summary({ isOpen, isSuccess, onClose, guessHistory, puzz
             backgroundColor: 'rgba(255, 255, 255, 0.75)'
         }
     };
-    const getGroupsHistory = () => guessHistory.map((guess) => {
-        return guess.map((guessWord) => guessWord.group)
-    })
     const title = isSuccess ? 'כל הכבוד!' : 'אולי בפעם הבאה';
     return <Modal
         isOpen={isOpen}
@@ -49,22 +39,12 @@ export default function Summary({ isOpen, isSuccess, onClose, guessHistory, puzz
         </div>
         <h1 className='mt-4'>{title}</h1>
         <div className='container guess-chart mt-5'>
-            {
-                getGroupsHistory().map((guessGroups, i) => {
-                    return <div className='row m-auto guess' key={i}>
-                        {guessGroups.reverse().map((group, j) => {
-                            return <div className={'col group group-' + group} key={j}></div>
-                        })}
-                    </div>
-                })
-            }
+            סיכוםםם
         </div>
         <div className='panel mt-5'>
             <button onClick={async () => {
-                await navigator.clipboard.writeText(`קישורים #${puzzleNumber}
-${guessHistory.map((guess) => guess.map((gw) => groupEmoji[gw.group]).join('')).join('\n')}
-רוצה לנסות גם?
-https://kishurim.netlify.app/`)
+                await navigator.clipboard.writeText(`טייבל #${puzzleNumber} רוצה לנסות גם?
+https://<TBD>/`)
                 toast("הועתק")
             }}>שיתוף</button>
         </div>

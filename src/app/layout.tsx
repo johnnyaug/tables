@@ -7,8 +7,8 @@ import NoSsr from './NoSsr';
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'קישורים',
-  description: 'מצאו ארבע קבוצות של ארבע מילים',
+  title: 'TABLES',
+  description: 'נחשו איזה אוכל זה לפי טבלת הערכים התזונתיים',
 }
 
 export default function RootLayout({
@@ -18,13 +18,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="he">
-
+  
       <body className={inter.className}>
         <link rel="icon" type="image/x-icon" href="/favicon.png" />
         <NoSsr>
           <div className='header mb-5 d-flex justify-content-center' dir='rtl'>
             <div>
-              <span className='h1 fw-bold'>קישורים&nbsp;</span>
+              <span className='h1 fw-bold'>TABLE&nbsp;</span>
               <span className='h5'>{new Date().toLocaleDateString('he-IL', {
                 weekday: 'long',
                 year: 'numeric',
@@ -35,7 +35,7 @@ export default function RootLayout({
             </div>
           </div>
           <div className='d-flex justify-content-center mb-3' dir='rtl'>
-            <h5 className='fw-light'>מצאו ארבע קבוצות של ארבע!</h5>
+            <h5 className='fw-light'>כמו מה זה נראה לכם?</h5>
           </div>
           {children}
         </NoSsr>
