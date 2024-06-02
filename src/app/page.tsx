@@ -1,18 +1,25 @@
 "use client";
 
-import { Database, SqlValue, Sqlite3Static } from "@sqlite.org/sqlite-wasm";
+import { Database, Sqlite3Static } from "@sqlite.org/sqlite-wasm";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Countdown from "react-countdown";
-import GridLayout, { WidthProvider } from "react-grid-layout";
 import { Toaster } from "react-hot-toast";
 import FactTable, { FactItem } from "./Facts";
 import Summary from "./Summary";
 import styles from "./page.module.css";
-import "/node_modules/react-grid-layout/css/styles.css";
-import "/node_modules/react-resizable/css/styles.css";
 
+const MAX_ATTEMPTS = 3;
+
+type Solved = {
+  attempts: number;
+};
+
+type Riddle = {
+  id: number;
+  solution: string;
+};
 const log = console.log;
 const error = console.error;
 
@@ -20,7 +27,7 @@ const initDB = async (sqlite3: Sqlite3Static) => {
   log("Running SQLite3 version", sqlite3.version.libVersion);
   const resp = await fetch("./riddles.db");
   const arrayBuffer = await resp.arrayBuffer();
-  const db = new sqlite3.oo1.DB();  
+  const db = new sqlite3.oo1.DB();
   const rc = sqlite3.capi.sqlite3_deserialize(
     db,
     "main",
@@ -33,11 +40,6 @@ const initDB = async (sqlite3: Sqlite3Static) => {
   return db;
 };
 
-
-const ResponsiveGridLayout = WidthProvider(GridLayout);
-type Riddle = {
-  id: number;
-};
 const GameState = {
   IN_PROGRESS: "in_progress",
   SUCCESS: "success",
@@ -47,52 +49,61 @@ const GameState = {
 export default function Board() {
   useEffect(() => {
     (async () => {
-      const sqlite3InitModule = (await import("@sqlite.org/sqlite-wasm")).default;
+      const sqlite3InitModule = (await import("@sqlite.org/sqlite-wasm"))
+        .default;
       const sqlite3 = await sqlite3InitModule({
         print: log,
         printErr: error,
       });
       setDB(await initDB(sqlite3));
     })();
-    
-  }, [])
+  }, []);
   const [db, setDB] = useState<Database>();
 
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
-  const [mistakesRemaining, setMistakesRemaining] = useLocalStorage(
-    "mistakesRemaining",
-    4
-  );
+  const [attempt, setAttempt] = useLocalStorage("attempts", 0);
   const [currentRiddleID, setCurrentRiddleID] = useLocalStorage(
     "currentRiddleID",
     0
   );
+  const [solved, setSolved] = useState<Solved>();
   const [riddle, setRiddle] = useState<Riddle>();
   const [facts, setFacts] = useState<FactItem[]>([]);
+  const userSolution = useRef<HTMLInputElement>(null);
   const searchParams = useSearchParams();
   useEffect(() => {
     if (!db) {
       return;
     }
-    const r : Riddle = db.selectObject(`SELECT * FROM riddles`) as Riddle;
-      setRiddle({
-      id: r.id,
-    });
-    const facts : FactItem[] = db.selectObjects(`SELECT * FROM facts WHERE riddle_id=? ORDER BY \`order\``, r.id) as FactItem[];
+    const r: Riddle = db.selectObject(`SELECT * FROM riddles`) as Riddle;
+    setRiddle(r);
+    const facts: FactItem[] = db.selectObjects(
+      `SELECT * FROM facts WHERE riddle_id=? ORDER BY \`order\``,
+      r.id
+    ) as FactItem[];
     setFacts(facts);
-    
   }, [db]);
   if (!db || !riddle) {
     return;
   }
   const onClickSolve = () => {
-    if (mistakesRemaining <= 0) {
+    if (attempt > MAX_ATTEMPTS) {
       return;
     }
-    // TODO
-    let newGameState: string = GameState.IN_PROGRESS;
+    console.log("AAAA");
+    setAttempt(attempt + 1);
+    console.log("R" + riddle.solution);
+    console.log("U" + userSolution.current);
+    if (userSolution.current?.value === riddle.solution) {
+      setSolved({ attempts: attempt + 1 });
+    }
   };
-  const gameState = GameState.IN_PROGRESS; // TODO
+  let gameState = GameState.IN_PROGRESS;
+  if (solved) {
+    gameState = GameState.SUCCESS;
+  } else if (attempt > MAX_ATTEMPTS) {
+    gameState = GameState.FAILURE;
+  }
 
   return (
     <main className={styles.main}>
@@ -110,15 +121,12 @@ export default function Board() {
         }}
       />
 
-      <FactTable
-        className="layout"
-        facts={facts}
-      />
+      <FactTable className="layout" facts={facts} />
       <div className="footer d-block">
         {gameState == GameState.IN_PROGRESS ? (
           <>
             <div className="panel">
-              <input type="text"></input>
+              <input type="text" ref={userSolution}></input>
             </div>
 
             <div className="panel">
@@ -126,7 +134,9 @@ export default function Board() {
               <button onClick={() => {}}>רמז</button>
             </div>
             <div className="panel">
-              <div className="mistakes">טעויות נותרו: {mistakesRemaining}</div>
+              <div className="mistakes">
+                טעויות נותרו: {MAX_ATTEMPTS - attempt}
+              </div>
             </div>
           </>
         ) : (
@@ -166,7 +176,7 @@ export default function Board() {
       <Summary
         puzzleNumber={riddle.id}
         isOpen={isSummaryOpen}
-        isSuccess={true} // TODO
+        isSuccess={gameState === GameState.SUCCESS}
         onClose={() => setIsSummaryOpen(false)}
       />
     </main>
