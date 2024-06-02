@@ -99,6 +99,10 @@
     padding: 10px 20px;
     cursor: pointer;
     color: #000;
+    &:disabled {
+      color: #ddd;
+      border: 1px solid #ddd;
+    }
   }
 }
 

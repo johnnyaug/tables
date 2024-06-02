@@ -2,8 +2,7 @@
 
 import { Database, Sqlite3Static } from "@sqlite.org/sqlite-wasm";
 import { useLocalStorage } from "@uidotdev/usehooks";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Countdown from "react-countdown";
 import { Toaster } from "react-hot-toast";
 import FactTable, { FactItem } from "./Facts";
@@ -61,7 +60,7 @@ export default function Board() {
   const [db, setDB] = useState<Database>();
 
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
-  const [attempt, setAttempt] = useLocalStorage("attempts", 0);
+  const [attempt, setAttempt] = useLocalStorage("attempt", 1);
   const [currentRiddleID, setCurrentRiddleID] = useLocalStorage(
     "currentRiddleID",
     0
@@ -69,8 +68,8 @@ export default function Board() {
   const [solved, setSolved] = useState<Solved>();
   const [riddle, setRiddle] = useState<Riddle>();
   const [facts, setFacts] = useState<FactItem[]>([]);
-  const userSolution = useRef<HTMLInputElement>(null);
-  const searchParams = useSearchParams();
+  const [userSolution, setUserSolution] = useState<String>("");
+  // const searchParams = useSearchParams();
   useEffect(() => {
     if (!db) {
       return;
@@ -90,13 +89,15 @@ export default function Board() {
     if (attempt > MAX_ATTEMPTS) {
       return;
     }
-    console.log("AAAA");
-    setAttempt(attempt + 1);
-    console.log("R" + riddle.solution);
-    console.log("U" + userSolution.current);
-    if (userSolution.current?.value === riddle.solution) {
-      setSolved({ attempts: attempt + 1 });
+    const newAttempt = attempt + 1;
+    setAttempt(newAttempt);
+    if (userSolution === riddle.solution) {
+      setSolved({ attempts: newAttempt });
+      setIsSummaryOpen(true);
+    } else if (newAttempt > MAX_ATTEMPTS) {
+      setIsSummaryOpen(true);
     }
+    
   };
   let gameState = GameState.IN_PROGRESS;
   if (solved) {
@@ -126,16 +127,16 @@ export default function Board() {
         {gameState == GameState.IN_PROGRESS ? (
           <>
             <div className="panel">
-              <input type="text" ref={userSolution}></input>
+              <input type="text" onChange={(e) => setUserSolution(e.target.value)}></input>
             </div>
 
             <div className="panel">
-              <button onClick={onClickSolve}>שליחה</button>
-              <button onClick={() => {}}>רמז</button>
+              <button onClick={onClickSolve} disabled={!Boolean(userSolution)}>שליחה</button>
+              <button onClick={() => {}} disabled={true}>רמז</button>
             </div>
             <div className="panel">
               <div className="mistakes">
-                טעויות נותרו: {MAX_ATTEMPTS - attempt}
+                טעויות נותרו: {MAX_ATTEMPTS + 1 - attempt}
               </div>
             </div>
           </>
