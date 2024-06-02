@@ -126,8 +126,8 @@ export default function Board() {
       <div className="footer d-block">
         {gameState == GameState.IN_PROGRESS ? (
           <>
-            <div className="panel">
-              <input type="text" onChange={(e) => setUserSolution(e.target.value)}></input>
+            <div className="panel" dir="rtl">
+              <input type="text" placeholder="ניחוש" onChange={(e) => setUserSolution(e.target.value)}></input>
             </div>
 
             <div className="panel">

@@ -11,71 +11,14 @@
   --blue: #36AE7C;
   --purple: #187498;
 } */
+body {
+  font-family: 'Open Sans';
+}
 
 .header {
   border-top: 1px rgb(220, 220, 220) solid;
   border-bottom: 1px rgb(220, 220, 220) solid;
   padding: 25px;
-}
-
-.react-grid-item {
-  border-radius: 5px;
-  background-color: #efefe6;
-  align-items: center;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  transition: all 0.2s ease;
-  transition-property: left, top, width, height;
-
-  &.word {
-    max-width: 150px;
-  }
-
-  &.wordgroup {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    animation: fadeIn 1s ease-in-out;
-
-    div {
-      text-align: center;
-      width: 100%;
-    }
-
-    .title {
-      margin: 20px 0 0;
-    }
-
-    .words {
-      margin: 0 0 20px;
-      font-weight: normal;
-    }
-
-    &.group-0 {
-      background-color: var(--yellow);
-    }
-
-    &.group-1 {
-      background-color: var(--green);
-    }
-
-    &.group-2 {
-      background-color: var(--blue);
-    }
-
-    &.group-3 {
-      background-color: var(--purple);
-    }
-  }
-
-  cursor: pointer;
-  font-weight: 600;
-
-  &.selected {
-    background-color: #000;
-    color: #fff;
-  }
 }
 
 .layout {
@@ -160,17 +103,18 @@
   right: 20px;
   cursor: pointer;
 }
-
+.game-header {
+  font-family: 'Bebas Neue';
+  text-align: center;
+}
 .performance-facts {
   direction: rtl;
-  margin: 20px auto;
+  margin: 50px auto;
   width: 400px;
-  border: 0;
+
   table {
-    border: 1px solid black;
     width: 100%;
     thead {
-
       text-align: center;
       padding: 20px;
       th {
@@ -183,17 +127,25 @@
 
     tbody {
       td {
-        padding: 5px 15px;
+        padding: 0 10px;
         // border-left: 1px solid black;
       }
     }
     td,
     th {
-      border: 1px solid black;
+      border: 1.5px solid #666;
+      color: #666;
     }
   }
 }
 
+.footer {
+  input[type='text'] {
+    padding: 6px;
+    border: 1px solid;
+    border-radius: 5px;
+  }
+}
 .float-right {
   float: right;
 }

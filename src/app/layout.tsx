@@ -4,7 +4,7 @@ import { Inter } from 'next/font/google';
 import './globals.scss';
 import NoSsr from './NoSsr';
 
-const inter = Inter({ subsets: ['latin'] })
+// const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'TABLES',
@@ -18,23 +18,29 @@ export default function RootLayout({
 }) {
   return (
     <html lang="he">
-      <body className={inter.className}>
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com"/>
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin={"anonymous"}/>
+        <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet"/>
+        <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet"></link>
+      </head>
+      <body>
         <link rel="icon" type="image/x-icon" href="/favicon.png" />
         <NoSsr>
           <div className='header mb-5 d-flex justify-content-center' dir='rtl'>
             <div>
-              <span className='h1 fw-bold'>TABLE&nbsp;</span>
-              <span className='h5'>{new Date().toLocaleDateString('he-IL', {
-                weekday: 'long',
+              <div className='h1 game-header'>TABLES</div>
+              <div className='fw-light'>[{new Date().toLocaleDateString('he-IL', {
+                // weekday: 'narrow',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
               }
-              )}</span>
+              )}]</div>
             </div>
           </div>
           <div className='d-flex justify-content-center mb-3' dir='rtl'>
-            <h5 className='fw-light'>כמו מה זה נראה לכם?</h5>
+            <h5>כמו מה זה נראה לכם?</h5>
           </div>
           {children}
         </NoSsr>
