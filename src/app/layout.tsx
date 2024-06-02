@@ -7,7 +7,7 @@ import NoSsr from './NoSsr';
 // const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'TABLES',
+  title: 'Tables',
   description: 'נחשו איזה אוכל זה לפי טבלת הערכים התזונתיים',
 }
 
@@ -25,7 +25,7 @@ export default function RootLayout({
         <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap" rel="stylesheet"></link>
       </head>
       <body>
-        <link rel="icon" type="image/x-icon" href="/favicon.png" />
+        <link rel="icon" type="image/x-icon" href="/favicon.ico" />
         <NoSsr>
           <div className='header mb-5 d-flex justify-content-center' dir='rtl'>
             <div>
