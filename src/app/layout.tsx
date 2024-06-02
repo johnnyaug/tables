@@ -18,7 +18,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="he">
-  
       <body className={inter.className}>
         <link rel="icon" type="image/x-icon" href="/favicon.png" />
         <NoSsr>

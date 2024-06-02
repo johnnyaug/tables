@@ -1,22 +1,43 @@
 "use client";
 
-import { DateTimeFormatter, LocalDate } from "@js-joda/core";
+import { Database, SqlValue, Sqlite3Static } from "@sqlite.org/sqlite-wasm";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import Countdown from "react-countdown";
 import GridLayout, { WidthProvider } from "react-grid-layout";
 import { Toaster } from "react-hot-toast";
-import FactTable from "./Facts";
+import FactTable, { FactItem } from "./Facts";
 import Summary from "./Summary";
 import styles from "./page.module.css";
 import "/node_modules/react-grid-layout/css/styles.css";
 import "/node_modules/react-resizable/css/styles.css";
 
+const log = console.log;
+const error = console.error;
+
+const initDB = async (sqlite3: Sqlite3Static) => {
+  log("Running SQLite3 version", sqlite3.version.libVersion);
+  const resp = await fetch("./riddles.db");
+  const arrayBuffer = await resp.arrayBuffer();
+  const db = new sqlite3.oo1.DB();  
+  const rc = sqlite3.capi.sqlite3_deserialize(
+    db,
+    "main",
+    sqlite3.wasm.allocFromTypedArray(arrayBuffer),
+    arrayBuffer.byteLength,
+    arrayBuffer.byteLength,
+    sqlite3.capi.SQLITE_DESERIALIZE_FREEONCLOSE
+  );
+  db.checkRc(rc);
+  return db;
+};
+
+
 const ResponsiveGridLayout = WidthProvider(GridLayout);
 type Riddle = {
-  id: number
-}
+  id: number;
+};
 const GameState = {
   IN_PROGRESS: "in_progress",
   SUCCESS: "success",
@@ -24,6 +45,18 @@ const GameState = {
 };
 
 export default function Board() {
+  useEffect(() => {
+    (async () => {
+      const sqlite3InitModule = (await import("@sqlite.org/sqlite-wasm")).default;
+      const sqlite3 = await sqlite3InitModule({
+        print: log,
+        printErr: error,
+      });
+      setDB(await initDB(sqlite3));
+    })();
+    
+  }, [])
+  const [db, setDB] = useState<Database>();
 
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
   const [mistakesRemaining, setMistakesRemaining] = useLocalStorage(
@@ -35,32 +68,21 @@ export default function Board() {
     0
   );
   const [riddle, setRiddle] = useState<Riddle>();
+  const [facts, setFacts] = useState<FactItem[]>([]);
   const searchParams = useSearchParams();
-
   useEffect(() => {
-    const today = DateTimeFormatter.ISO_LOCAL_DATE.format(LocalDate.now());
-    fetch(`./riddles.json?dt=${today}`)
-      .then((res) => res.json())
-      .then((data) => {
-        let dtKey = Object.keys(data).find((key) => key <= today);
-        if (!dtKey) {
-          dtKey = Object.keys(data)[0];
-        }
-        if (searchParams.has("preview")) {
-          dtKey = Object.keys(data)[0];
-        }
-        const todayData = data[dtKey];
-        setRiddle(todayData);
-        if (currentRiddleID !== todayData.id) {
-          // TODO
-          setMistakesRemaining(4);
-          setCurrentRiddleID(todayData.id);
-        }
-      });
-  }, []);
-
-
-  if (!riddle) {
+    if (!db) {
+      return;
+    }
+    const r : Riddle = db.selectObject(`SELECT * FROM riddles`) as Riddle;
+      setRiddle({
+      id: r.id,
+    });
+    const facts : FactItem[] = db.selectObjects(`SELECT * FROM facts WHERE riddle_id=? ORDER BY \`order\``, r.id) as FactItem[];
+    setFacts(facts);
+    
+  }, [db]);
+  if (!db || !riddle) {
     return;
   }
   const onClickSolve = () => {
@@ -70,7 +92,7 @@ export default function Board() {
     // TODO
     let newGameState: string = GameState.IN_PROGRESS;
   };
- const gameState = GameState.IN_PROGRESS; // TODO
+  const gameState = GameState.IN_PROGRESS; // TODO
 
   return (
     <main className={styles.main}>
@@ -90,13 +112,7 @@ export default function Board() {
 
       <FactTable
         className="layout"
-        facts={[
-          {
-            name: "קלוריות",
-            quantity: "200",
-          },
-          { name: "חלבונים", units: "ג׳", quantity: "5" },
-        ]}
+        facts={facts}
       />
       <div className="footer d-block">
         {gameState == GameState.IN_PROGRESS ? (

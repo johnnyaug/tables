@@ -1,7 +1,7 @@
-type FactItem = {
+export type FactItem = {
   name: string;
   units?: string;
-  quantity: string;
+  value: string;
 };
 
 type FactTableProps = {
@@ -20,9 +20,9 @@ export default function FactTable({ className, facts }: FactTableProps) {
         </thead>
         <tbody>
           {facts.map((f) => (
-            <tr>
+            <tr key={f.name}>
               <td>{f.name}{f.units ?` (${f.units})` : ""}</td>
-              <td>{f.quantity}</td>
+              <td>{f.value}</td>
             </tr>
           ))}
         </tbody>
