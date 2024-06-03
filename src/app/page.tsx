@@ -182,7 +182,7 @@ export default function Board() {
             </div>
             <div className="panel" dir="rtl">
               <div className="h5">
-                <div className="mb-2 mt-4">זמן עד החידה הבאה:</div>
+                <div className="mb-2 mt-4">החידה הבאה בעוד:</div>
                 <Countdown
                   renderer={(r) =>
                     String(r.hours).padStart(2, "0") +

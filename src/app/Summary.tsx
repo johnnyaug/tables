@@ -34,7 +34,6 @@ export default function Summary({
   const title = isSuccess ? "כל הכבוד!" : "אולי בפעם הבאה";
   return (
     <Modal
-        scroll={false}
       isOpen={isOpen}
       onRequestClose={onClose}
       // @ts-ignore
