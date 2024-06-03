@@ -8,6 +8,7 @@ import { Toaster } from "react-hot-toast";
 import FactTable, { FactItem } from "./Facts";
 import Summary from "./Summary";
 import styles from "./page.module.css";
+import Clues, { Clue } from "./Clues";
 
 const MAX_ATTEMPTS = 3;
 
@@ -18,7 +19,10 @@ type Solved = {
 type Riddle = {
   id: number;
   solution: string;
+  facts: FactItem[];
+  clues: Clue[];
 };
+
 const log = console.log;
 const error = console.error;
 
@@ -67,20 +71,34 @@ export default function Board() {
   );
   const [solved, setSolved] = useState<Solved>();
   const [riddle, setRiddle] = useState<Riddle>();
-  const [facts, setFacts] = useState<FactItem[]>([]);
   const [userSolution, setUserSolution] = useState<String>("");
   // const searchParams = useSearchParams();
   useEffect(() => {
     if (!db) {
       return;
     }
-    const r: Riddle = db.selectObject(`SELECT * FROM riddles`) as Riddle;
-    setRiddle(r);
+    const dbRiddle = db.selectObject(
+      `SELECT * FROM riddles WHERE dt<='${new Date()
+        .toISOString()
+        .substring(0, 10)}' ORDER BY dt DESC LIMIT 1`
+    );
+    if (!dbRiddle) {
+      return;
+    }
     const facts: FactItem[] = db.selectObjects(
       `SELECT * FROM facts WHERE riddle_id=? ORDER BY \`order\``,
-      r.id
+      dbRiddle.id
     ) as FactItem[];
-    setFacts(facts);
+    const clues: Clue[] = db.selectObjects(
+      `SELECT * FROM clues WHERE riddle_id=? ORDER BY \`order\``,
+      dbRiddle.id
+    ) as Clue[];
+    setRiddle({
+      id: dbRiddle.id as number,
+      solution: dbRiddle.solution as string,
+      clues: clues,
+      facts: facts,
+    });
   }, [db]);
   if (!db || !riddle) {
     return;
@@ -97,7 +115,6 @@ export default function Board() {
     } else if (newAttempt > MAX_ATTEMPTS) {
       setIsSummaryOpen(true);
     }
-    
   };
   let gameState = GameState.IN_PROGRESS;
   if (solved) {
@@ -107,7 +124,7 @@ export default function Board() {
   }
 
   return (
-    <main className={styles.main}>
+    <main className={styles.main} dir="rtl">
       <Toaster
         containerStyle={{
           bottom: "40px",
@@ -122,21 +139,31 @@ export default function Board() {
         }}
       />
 
-      <FactTable className="layout" facts={facts} />
+      <FactTable className="layout" facts={riddle.facts} />
+      <Clues clues={riddle.clues.slice(0, attempt - 1)} />
       <div className="footer d-block">
         {gameState == GameState.IN_PROGRESS ? (
           <>
             <div className="panel" dir="rtl">
-              <input type="text" placeholder="ניחוש" onChange={(e) => setUserSolution(e.target.value)}></input>
+              <input
+                type="text"
+                placeholder="ניחוש"
+                onChange={(e) => setUserSolution(e.target.value)}
+              ></input>
             </div>
 
-            <div className="panel">
-              <button onClick={onClickSolve} disabled={!Boolean(userSolution)}>שליחה</button>
-              <button onClick={() => {}} disabled={true}>רמז</button>
+            <div className="panel" dir="rtl">
+              <button onClick={onClickSolve} disabled={!Boolean(userSolution)}>
+                שליחה
+              </button>
+              <button onClick={() => {}} disabled={true}>
+                דלג
+              </button>
             </div>
             <div className="panel">
-              <div className="mistakes">
-                טעויות נותרו: {MAX_ATTEMPTS + 1 - attempt}
+              <div className="mistakes mt-4">
+                ניחושים שנותרו:&nbsp;&nbsp;&nbsp;
+                {"⏺ ".repeat(MAX_ATTEMPTS + 1 - attempt)}
               </div>
             </div>
           </>

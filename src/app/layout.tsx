@@ -39,9 +39,6 @@ export default function RootLayout({
               )}]</div>
             </div>
           </div>
-          <div className='d-flex justify-content-center mb-3' dir='rtl'>
-            <h5>כמו מה זה נראה לכם?</h5>
-          </div>
           {children}
         </NoSsr>
       </body>
