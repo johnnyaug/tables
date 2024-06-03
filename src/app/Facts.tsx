@@ -14,15 +14,14 @@ export default function FactTable({ className, facts }: FactTableProps) {
       <table>
         <thead>
           <tr>
-            <th>סימון תזונתי</th>
-            <th>ל-100 ג׳ מוצר</th>
+            <th colSpan={2}>סימון תזונתי ל-100 ג׳ מוצר</th>
           </tr>
         </thead>
         <tbody>
           {facts.map((f) => (
             <tr key={f.name}>
               <td>{f.name}{f.units ?` (${f.units})` : ""}</td>
-              <td>{f.value}</td>
+              <td className="values">{f.value}</td>
             </tr>
           ))}
         </tbody>

@@ -16,9 +16,11 @@ type Solved = {
   attempts: number;
 };
 
-type Riddle = {
+export type Riddle = {
   id: number;
   solution: string;
+  product_name: string;
+  photo: string;
   facts: FactItem[];
   clues: Clue[];
 };
@@ -28,7 +30,7 @@ const error = console.error;
 
 const initDB = async (sqlite3: Sqlite3Static) => {
   log("Running SQLite3 version", sqlite3.version.libVersion);
-  const resp = await fetch("./riddles.db");
+  const resp = await fetch(`./riddles.db?break=${new Date().toISOString().substring(0,10)}`);
   const arrayBuffer = await resp.arrayBuffer();
   const db = new sqlite3.oo1.DB();
   const rc = sqlite3.capi.sqlite3_deserialize(
@@ -69,7 +71,7 @@ export default function Board() {
     "currentRiddleID",
     0
   );
-  const [solved, setSolved] = useState<Solved>();
+  const [solved, setSolved] = useLocalStorage<Solved>("solved");
   const [riddle, setRiddle] = useState<Riddle>();
   const [userSolution, setUserSolution] = useState<String>("");
   // const searchParams = useSearchParams();
@@ -96,9 +98,15 @@ export default function Board() {
     setRiddle({
       id: dbRiddle.id as number,
       solution: dbRiddle.solution as string,
+      product_name: dbRiddle.product_name as string,
+      photo: dbRiddle.photo as string,
       clues: clues,
       facts: facts,
     });
+    if (currentRiddleID !== dbRiddle.id) {
+      setAttempt(1);
+      setCurrentRiddleID(dbRiddle.id as number);
+    }
   }, [db]);
   if (!db || !riddle) {
     return;
@@ -140,7 +148,7 @@ export default function Board() {
       />
 
       <FactTable className="layout" facts={riddle.facts} />
-      <Clues clues={riddle.clues.slice(0, attempt - 1)} />
+      {gameState === GameState.IN_PROGRESS && <Clues clues={riddle.clues.slice(0, attempt - 1)} />}
       <div className="footer d-block">
         {gameState == GameState.IN_PROGRESS ? (
           <>
@@ -202,7 +210,7 @@ export default function Board() {
           </button>
         ))}
       <Summary
-        puzzleNumber={riddle.id}
+        riddle={riddle}
         isOpen={isSummaryOpen}
         isSuccess={gameState === GameState.SUCCESS}
         onClose={() => setIsSummaryOpen(false)}

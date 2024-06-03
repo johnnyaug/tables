@@ -26,7 +26,7 @@ export default function Clues({ clues }: { clues: Clue[] }) {
                     <div>
                       <b>רכיבים</b>:&nbsp;
                       {names.map((n, i) => {
-                        return `${n || "???"} (${percents[i]}%)`;
+                        return `${n || "____"} (${percents[i]}%)`;
                       }).join(", ")}
                     </div>
                   );
