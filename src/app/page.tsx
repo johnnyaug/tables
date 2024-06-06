@@ -4,7 +4,7 @@ import { Database, Sqlite3Static } from "@sqlite.org/sqlite-wasm";
 import { useLocalStorage } from "@uidotdev/usehooks";
 import { useEffect, useState } from "react";
 import Countdown from "react-countdown";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import FactTable, { FactItem } from "./Facts";
 import Summary from "./Summary";
 import styles from "./page.module.css";
@@ -30,7 +30,9 @@ const error = console.error;
 
 const initDB = async (sqlite3: Sqlite3Static) => {
   log("Running SQLite3 version", sqlite3.version.libVersion);
-  const resp = await fetch(`./riddles.db?break=${new Date().toISOString().substring(0,10)}`);
+  const resp = await fetch(
+    `./riddles.db?break=${new Date().toISOString().substring(0, 10)}`
+  );
   const arrayBuffer = await resp.arrayBuffer();
   const db = new sqlite3.oo1.DB();
   const rc = sqlite3.capi.sqlite3_deserialize(
@@ -74,6 +76,7 @@ export default function Board() {
   const [solved, setSolved] = useLocalStorage<Solved>("solved");
   const [riddle, setRiddle] = useState<Riddle>();
   const [userSolution, setUserSolution] = useState<String>("");
+  const [guessInvalid, setGuessInvalid] = useState<Boolean>(false);
   // const searchParams = useSearchParams();
   useEffect(() => {
     if (!db) {
@@ -120,7 +123,11 @@ export default function Board() {
     if (userSolution === riddle.solution) {
       setSolved({ attempts: newAttempt });
       setIsSummaryOpen(true);
-    } else if (newAttempt > MAX_ATTEMPTS) {
+      return;
+    }
+    setGuessInvalid(true);
+    if (newAttempt > MAX_ATTEMPTS) {
+      toast("אולי בפעם הבאה");
       setIsSummaryOpen(true);
     }
   };
@@ -148,15 +155,26 @@ export default function Board() {
       />
 
       <FactTable className="layout" facts={riddle.facts} />
-      {gameState === GameState.IN_PROGRESS && <Clues clues={riddle.clues.slice(0, attempt - 1)} />}
-      <div className="footer d-block">
+      {gameState === GameState.IN_PROGRESS && (
+        <Clues clues={riddle.clues.slice(0, attempt - 1)} />
+      )}
+      <div className="d-block">
         {gameState == GameState.IN_PROGRESS ? (
           <>
             <div className="panel" dir="rtl">
               <input
                 type="text"
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    onClickSolve();
+                  }
+                }}
                 placeholder="ניחוש"
-                onChange={(e) => setUserSolution(e.target.value)}
+                className={`form-control ${guessInvalid ? "is-invalid" : ""}`}
+                onChange={(e) => {
+                  setUserSolution(e.target.value);
+                  setGuessInvalid(false);
+                }}
               ></input>
             </div>
 

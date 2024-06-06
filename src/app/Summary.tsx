@@ -43,10 +43,13 @@ export default function Summary({
         <div className="close-button" onClick={onClose}>
           <span aria-hidden="true">&times;</span>
         </div>
-        <h1 className="mt-4">{title}</h1>
-        <div className="container guess-chart mt-2">{riddle.product_name}</div>
-        <img src={riddle.photo} />
-        <div className="panel mt-2">
+        <h1>{isSuccess ? "😒" : "😒"}</h1>
+        <h4 className="mt-2">{title}</h4>
+        <div className="mt-4">
+          <img src={riddle.photo} />
+        </div>
+        <div className="container guess-chart">{riddle.product_name}</div>
+        <div className="panel mt-5">
           <button
             onClick={async () => {
               await navigator.clipboard
